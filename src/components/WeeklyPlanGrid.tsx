@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useOptimistic, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Trash2, Plus, Utensils, CheckCircle, GripVertical } from "lucide-react";
 import { removeFromWeeklyPlan, markAsCooked, moveWeeklyPlanItem, addToWeeklyPlan } from "@/app/actions/weekly-plan";
@@ -45,7 +45,7 @@ export function WeeklyPlanGrid({ initialPlans, recipes, days, meals }: Props) {
       return;
     }
 
-    // Extract day and meal from droppableId (format: "Day-Meal")
+    // Extract day and meal from droppableId (format: "Day|Meal")
     const [destDay, destMeal] = destination.droppableId.split("|");
     
     // Optimistic update

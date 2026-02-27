@@ -4,11 +4,17 @@ import { useState } from "react";
 import { Plus, Trash2, Save, ChefHat, Loader2, X } from "lucide-react";
 import { addManualRecipe } from "@/app/actions/recipes";
 
+interface IngredientInput {
+  name: string;
+  quantity: number;
+  unit: string;
+}
+
 export function RecipeManualForm({ modalId }: { modalId: string }) {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [tags, setTags] = useState("");
-  const [ingredients, setIngredients] = useState([{ name: "", quantity: 1, unit: "pz" }]);
+  const [ingredients, setIngredients] = useState<IngredientInput[]>([{ name: "", quantity: 1, unit: "pz" }]);
 
   const addIngredient = () => {
     setIngredients([...ingredients, { name: "", quantity: 1, unit: "pz" }]);
@@ -20,9 +26,13 @@ export function RecipeManualForm({ modalId }: { modalId: string }) {
     }
   };
 
-  const updateIngredient = (index: number, field: string, value: string | number) => {
+  const updateIngredient = (index: number, field: keyof IngredientInput, value: string | number) => {
     const newIngredients = [...ingredients];
-    (newIngredients[index] as any)[field] = value;
+    if (field === "quantity") {
+      newIngredients[index].quantity = typeof value === "number" ? value : parseFloat(value);
+    } else {
+      newIngredients[index][field] = value as string;
+    }
     setIngredients(newIngredients);
   };
 
@@ -101,7 +111,7 @@ export function RecipeManualForm({ modalId }: { modalId: string }) {
                   type="number"
                   step="0.1"
                   value={ing.quantity}
-                  onChange={(e) => updateIngredient(index, "quantity", parseFloat(e.target.value))}
+                  onChange={(e) => updateIngredient(index, "quantity", e.target.value)}
                   className="input input-bordered input-sm w-full rounded-lg" 
                   required 
                 />

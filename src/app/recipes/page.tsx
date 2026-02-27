@@ -1,9 +1,10 @@
 import { db } from "@/lib/db";
 import { deleteRecipe } from "@/app/actions/recipes";
-import { Trash2, ExternalLink, ChevronDown, ChevronLeft, ChevronRight, SortAsc, Clock, Search as SearchIcon, ChefHat, Plus } from "lucide-react";
+import { Trash2, ExternalLink, ChevronDown, ChevronLeft, ChevronRight, SortAsc, Clock, Search as SearchIcon, Plus } from "lucide-react";
 import { RecipeImportForm } from "@/components/RecipeImportForm";
 import { RecipeManualForm } from "@/components/RecipeManualForm";
 import Link from "next/link";
+import { Prisma } from "@prisma/client";
 
 const PAGE_SIZE = 12;
 
@@ -16,12 +17,12 @@ export default async function RecipesPage({
   const currentPage = Math.max(1, parseInt(page || "1"));
   const currentSort = sort || "newest";
 
-  let orderBy: any = { name: "asc" };
+  let orderBy: Prisma.RecipeOrderByWithRelationInput = { name: "asc" };
   if (currentSort === "newest") orderBy = { id: "desc" };
   if (currentSort === "name_desc") orderBy = { name: "desc" };
 
   // Definizione filtri di ricerca globali (Nome OR Ingredienti)
-  const whereClause = search ? {
+  const whereClause: Prisma.RecipeWhereInput = search ? {
     OR: [
       { name: { contains: search } },
       {

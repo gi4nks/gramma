@@ -10,6 +10,16 @@ interface ExtractedIngredient {
   unit: string;
 }
 
+interface JsonLdRecipe {
+  "@type": string | string[];
+  name?: string;
+  recipeIngredient?: string[];
+  ingredients?: string[];
+  recipeCategory?: string | string[];
+  keywords?: string;
+  "@graph"?: JsonLdRecipe[];
+}
+
 function parseIngredientString(input: string): ExtractedIngredient {
   const cleanInput = input
     .replace(/&nbsp;/g, " ")
@@ -56,7 +66,7 @@ function parseIngredientString(input: string): ExtractedIngredient {
 }
 
 function parseNumericQuantity(qtyStr: string): number {
-  let normalized = qtyStr.replace(",", ".").replace(/\s/g, "");
+  const normalized = qtyStr.replace(",", ".").replace(/\s/g, "");
   if (normalized.includes("/")) {
     const [num, den] = normalized.split("/").map(Number);
     return den !== 0 ? num / den : 1;
@@ -77,33 +87,36 @@ async function extractRecipeFromJsonLd(url: string) {
     const html = await response.text();
     const $ = cheerio.load(html);
     
-    let recipeData: any = null;
+    let recipeData: JsonLdRecipe | null = null;
 
     $('script[type="application/ld+json"]').each((_, el) => {
       try {
         const json = JSON.parse($(el).text());
-        const findRecipe = (obj: any): any => {
+        const findRecipe = (obj: JsonLdRecipe | JsonLdRecipe[]): JsonLdRecipe | null => {
           if (!obj) return null;
           if (Array.isArray(obj)) {
             for (const item of obj) {
               const found = findRecipe(item);
               if (found) return found;
             }
+          } else {
+            const types = Array.isArray(obj["@type"]) ? obj["@type"] : [obj["@type"]];
+            if (types.includes("Recipe")) return obj;
+            if (obj["@graph"] && Array.isArray(obj["@graph"])) return findRecipe(obj["@graph"]);
           }
-          if (obj["@type"] === "Recipe" || (Array.isArray(obj["@type"]) && obj["@type"].includes("Recipe"))) return obj;
-          if (obj["@graph"] && Array.isArray(obj["@graph"])) return findRecipe(obj["@graph"]);
           return null;
         };
         const found = findRecipe(json);
         if (found) { recipeData = found; return false; }
-      } catch (e) {}
+      } catch {
+        // Ignora errori di parsing JSON
+      }
     });
 
     if (!recipeData) {
       return { name: $("h1").first().text().trim() || $("title").text().trim(), ingredients: [], tags: "" };
     }
 
-    // Estrazione Tag (Category + Keywords)
     const tagsArr: string[] = [];
     if (recipeData.recipeCategory) {
       if (Array.isArray(recipeData.recipeCategory)) tagsArr.push(...recipeData.recipeCategory);

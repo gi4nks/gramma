@@ -15,7 +15,7 @@ export function RecipeImportForm() {
       await addRecipeFromUrl(formData);
       const form = document.getElementById("import-form") as HTMLFormElement;
       form?.reset();
-    } catch (e) {
+    } catch {
       setError("Errore durante l'importazione. Riprova con un altro link.");
     } finally {
       setLoading(false);

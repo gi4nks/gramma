@@ -1,11 +1,19 @@
 import { db } from "@/lib/db";
 import { normalizeQuantity, sanitizeIngredientName } from "@/lib/ingredients";
-import { ChefHat, CheckCircle2, AlertCircle, Sparkles, ArrowRight, CalendarPlus, Search, X } from "lucide-react";
+import { CheckCircle2, Sparkles, CalendarPlus, Search, X } from "lucide-react";
 import Link from "next/link";
 import { InspirationAddForm } from "@/components/InspirationAddForm";
 
 const DAYS = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
 const MEALS = ["Colazione", "Pranzo", "Cena"];
+
+interface RecipeWithInspiration extends Recipe {
+  percent: number;
+  missingCount: number;
+  missingList: string[];
+}
+
+import { Recipe } from "@prisma/client";
 
 export default async function InspirationPage({
   searchParams,
@@ -130,7 +138,7 @@ export default async function InspirationPage({
           </div>
         ) : (
           displayedRecipes.map(recipe => (
-            <RecipeDenseCard key={recipe.id} recipe={recipe} />
+            <RecipeDenseCard key={recipe.id} recipe={recipe as RecipeWithInspiration} />
           ))
         )}
       </div>
@@ -138,7 +146,7 @@ export default async function InspirationPage({
   );
 }
 
-function RecipeDenseCard({ recipe }: { recipe: any }) {
+function RecipeDenseCard({ recipe }: { recipe: RecipeWithInspiration }) {
   const modalId = `modal-plan-${recipe.id}`;
   const isReady = recipe.percent === 100;
   const isAlmost = recipe.percent >= 50 && recipe.percent < 100;

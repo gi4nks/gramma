@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import Link from "next/link";
-import { Refrigerator, Calendar, ShoppingBasket, Search, ArrowRight, Sparkles, ChefHat, Utensils } from "lucide-react";
+import { Search, ArrowRight, ChefHat, Utensils, Calendar } from "lucide-react";
 
 export default async function Home() {
   const [pantryCount, recipesCount, nextMeal, allRecipes, pantryItems] = await Promise.all([
@@ -30,10 +30,10 @@ export default async function Home() {
   .slice(0, 3);
 
   return (
-    <div className="flex flex-col gap-12 max-w-5xl mx-auto py-4">
+    <div className="flex flex-col gap-12 w-full py-4">
       
       {/* 1. Header & Quick Stats (Compact) */}
-      <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 px-4 md:px-0">
         <div>
           <h1 className="text-5xl font-black tracking-tight mb-2">Ciao! 👋</h1>
           <p className="text-xl text-base-content/60">Cosa bolle in pentola?</p>
@@ -70,7 +70,7 @@ export default async function Home() {
 
       {/* 3. Suggestions Grid (Visual Cards) */}
       <section className="flex flex-col gap-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-4 md:px-0">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <ChefHat size={24} className="text-primary" />
             Suggeriti per te
@@ -80,7 +80,7 @@ export default async function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {suggestions.length === 0 ? (
-            <div className="col-span-full py-20 text-center bg-base-200/50 rounded-3xl border-2 border-dashed border-base-300">
+            <div className="col-span-full py-20 text-center bg-base-200/50 rounded-3xl border-2 border-dashed border-base-300 mx-4 md:mx-0">
               <p className="text-base-content/40 italic">Aggiungi ingredienti in dispensa per vedere cosa puoi cucinare!</p>
             </div>
           ) : (
@@ -105,7 +105,7 @@ export default async function Home() {
                       {recipe.name}
                     </h3>
                     <p className="text-xs opacity-50 mt-2 uppercase font-bold tracking-tighter">
-                      {recipe.matchCount} ingredienti pronti
+                      {('matchCount' in recipe) ? recipe.matchCount : 0} ingredienti pronti
                     </p>
                   </div>
 
@@ -121,7 +121,7 @@ export default async function Home() {
 
       {/* 4. Next Meal Card (Minimalist) */}
       {nextMeal && (
-        <section className="bg-neutral text-neutral-content p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+        <section className="bg-neutral text-neutral-content p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl mx-4 md:mx-0">
           <div className="flex items-center gap-6">
             <div className="bg-white/10 p-4 rounded-2xl">
               <Calendar size={32} />
