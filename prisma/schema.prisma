@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Ingredient {
+  id                String             @id @default(cuid())
+  name              String             @unique
+  pantryItems       PantryItem[]
+  recipeIngredients RecipeIngredient[]
+}
+
+model PantryItem {
+  id           String     @id @default(cuid())
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId String     @unique
+  quantity     Float
+  unit         String
+}
+
+model Recipe {
+  id                String             @id @default(cuid())
+  name              String
+  sourceUrl         String?
+  tags              String?            // Stringa separata da virgole (es: "primo,vegana")
+  ingredients       RecipeIngredient[]
+  weeklyPlans       WeeklyPlan[]
+}
+
+model RecipeIngredient {
+  id           String     @id @default(cuid())
+  recipe       Recipe     @relation(fields: [recipeId], references: [id])
+  recipeId     String
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId String
+  quantity     Float
+  unit         String
+}
+
+model WeeklyPlan {
+  id       String @id @default(cuid())
+  day      String
+  mealType String
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipeId String
+}
