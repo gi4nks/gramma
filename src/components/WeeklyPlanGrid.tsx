@@ -24,6 +24,8 @@ interface Props {
 
 export function WeeklyPlanGrid({ initialPlans, recipes, days, meals }: Props) {
   const [isPending, startTransition] = useTransition();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
   
   // State for the plans, initially from server
   const [plans, setPlans] = useState(initialPlans);
@@ -32,6 +34,10 @@ export function WeeklyPlanGrid({ initialPlans, recipes, days, meals }: Props) {
   if (initialPlans !== plans && !isPending) {
     setPlans(initialPlans);
   }
+
+  const filteredRecipes = searchTerm.trim() === "" 
+    ? recipes.slice(0, 10) 
+    : recipes.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 20);
 
   const onDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
@@ -142,33 +148,74 @@ export function WeeklyPlanGrid({ initialPlans, recipes, days, meals }: Props) {
                       {/* Modal (Unique per slot) */}
                       <input type="checkbox" id={`modal-${day}-${meal}`} className="modal-toggle" />
                       <div className="modal" role="dialog">
-                        <div className="modal-box rounded-[2rem]">
+                        <div className="modal-box rounded-[2rem]" data-theme="light">
                           <div className="flex items-center gap-3 mb-6">
                             <div className="bg-primary/10 p-3 rounded-2xl text-primary"><Utensils size={24}/></div>
                             <h3 className="font-black text-xl italic uppercase">Aggiungi a {day} ({meal})</h3>
                           </div>
                           
                           <form action={async (formData) => {
+                            const recipeId = formData.get("recipeId");
+                            if (!recipeId) return;
+                            
                             await addToWeeklyPlan(formData);
                             const modal = document.getElementById(`modal-${day}-${meal}`) as HTMLInputElement;
                             if (modal) modal.checked = false;
+                            setSearchTerm("");
+                            setSelectedRecipeId(null);
                           }} className="flex flex-col gap-4">
                             <input type="hidden" name="day" value={day} />
                             <input type="hidden" name="mealType" value={meal} />
+                            <input type="hidden" name="recipeId" value={selectedRecipeId || ""} required />
+                            
                             <div className="form-control">
                               <label className="label">
-                                <span className="label-text font-bold opacity-50">SELEZIONA UNA RICETTA</span>
+                                <span className="label-text font-bold opacity-50">CERCA RICETTA</span>
                               </label>
-                              <select name="recipeId" className="select select-bordered w-full rounded-xl" required defaultValue="">
-                                <option value="" disabled>Scegli dalla tua collezione...</option>
-                                {recipes.map((r) => (
-                                  <option key={r.id} value={r.id}>{r.name}</option>
-                                ))}
-                              </select>
+                              <input 
+                                type="text" 
+                                className="input input-bordered w-full rounded-xl mb-2" 
+                                placeholder="Scrivi il nome del piatto..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                              />
+                              
+                              <div className="flex flex-col gap-1 max-h-48 overflow-y-auto border border-base-200 rounded-xl p-1 bg-base-200/30">
+                                {filteredRecipes.length > 0 ? (
+                                  filteredRecipes.map((r) => (
+                                    <button
+                                      key={r.id}
+                                      type="button"
+                                      onClick={() => setSelectedRecipeId(r.id)}
+                                      className={`btn btn-ghost btn-sm justify-start text-left font-medium h-auto py-2 rounded-lg ${selectedRecipeId === r.id ? 'btn-active bg-primary/20 text-primary' : ''}`}
+                                    >
+                                      {r.name}
+                                    </button>
+                                  ))
+                                ) : (
+                                  <div className="p-4 text-center text-xs opacity-50 italic">Nessuna ricetta trovata</div>
+                                )}
+                              </div>
                             </div>
+
                             <div className="modal-action">
-                              <label htmlFor={`modal-${day}-${meal}`} className="btn btn-ghost">Chiudi</label>
-                              <button type="submit" className="btn btn-primary px-8 shadow-lg shadow-primary/20">Aggiungi Piatto</button>
+                              <label 
+                                htmlFor={`modal-${day}-${meal}`} 
+                                className="btn btn-ghost"
+                                onClick={() => {
+                                  setSearchTerm("");
+                                  setSelectedRecipeId(null);
+                                }}
+                              >
+                                Chiudi
+                              </label>
+                              <button 
+                                type="submit" 
+                                className="btn btn-primary px-8 shadow-lg shadow-primary/20"
+                                disabled={!selectedRecipeId}
+                              >
+                                Aggiungi Piatto
+                              </button>
                             </div>
                           </form>
                         </div>

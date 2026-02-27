@@ -3,7 +3,7 @@ node_modules
 .git
 .github
 Dockerfile
-docker-entrypoint.sh
+# docker-entrypoint.sh
 README.md
 GEMINI.md
 prisma/dev.db

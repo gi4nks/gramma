@@ -15,6 +15,9 @@ help:
 	@echo "  make db-migrate   - Crea/Applica le migrazioni del database"
 	@echo "  make db-generate  - Rigenera il client Prisma"
 	@echo "  make db-studio    - Apre l'interfaccia browser per il database"
+	@echo "  make docker-build - Crea l'immagine Docker"
+	@echo "  make docker-up    - Avvia i container in background"
+	@echo "  make docker-down  - Ferma e rimuove i container"
 	@echo "  make clean        - Rimuove node_modules e build artifacts"
 
 install:
@@ -48,3 +51,19 @@ start:
 clean:
 	@echo "$(BLUE)Pulizia progetto...$(NC)"
 	rm -rf node_modules .next dist prisma/dev.db*
+
+docker-build:
+	@echo "$(BLUE)Creazione immagine Docker...$(NC)"
+	docker compose build
+
+docker-up:
+	@echo "$(BLUE)Avvio container...$(NC)"
+	docker compose up -d
+
+docker-down:
+	@echo "$(BLUE)Arresto container...$(NC)"
+	docker compose down
+
+docker-logs:
+	@echo "$(BLUE)Visualizzazione log...$(NC)"
+	docker compose logs -f
