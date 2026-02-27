@@ -107,7 +107,10 @@ async function extractRecipeFromJsonLd(url: string) {
           return null;
         };
         const found = findRecipe(json);
-        if (found) { recipeData = found; return false; }
+        if (found) { 
+          recipeData = found; 
+          return false; 
+        }
       } catch {
         // Ignora errori di parsing JSON
       }
@@ -117,13 +120,14 @@ async function extractRecipeFromJsonLd(url: string) {
       return { name: $("h1").first().text().trim() || $("title").text().trim(), ingredients: [], tags: "" };
     }
 
+    const currentRecipeData = recipeData as JsonLdRecipe;
     const tagsArr: string[] = [];
-    if (recipeData.recipeCategory) {
-      if (Array.isArray(recipeData.recipeCategory)) tagsArr.push(...recipeData.recipeCategory);
-      else tagsArr.push(recipeData.recipeCategory);
+    if (currentRecipeData.recipeCategory) {
+      if (Array.isArray(currentRecipeData.recipeCategory)) tagsArr.push(...currentRecipeData.recipeCategory);
+      else tagsArr.push(currentRecipeData.recipeCategory);
     }
-    if (recipeData.keywords && typeof recipeData.keywords === "string") {
-      tagsArr.push(...recipeData.keywords.split(","));
+    if (currentRecipeData.keywords && typeof currentRecipeData.keywords === "string") {
+      tagsArr.push(...currentRecipeData.keywords.split(","));
     }
 
     const forbiddenTags = ["ricetta", "ricette", "cucina", "cucinare", "piatti", "portata", "preparazione"];
@@ -134,10 +138,10 @@ async function extractRecipeFromJsonLd(url: string) {
         .filter(t => t.length > 2 && t.length < 20 && !forbiddenTags.includes(t))
     )).join(",");
 
-    const rawIngredients = recipeData.recipeIngredient || recipeData.ingredients || [];
+    const rawIngredients = currentRecipeData.recipeIngredient || currentRecipeData.ingredients || [];
     
     return {
-      name: recipeData.name || $("h1").first().text().trim(),
+      name: currentRecipeData.name || $("h1").first().text().trim(),
       ingredients: rawIngredients.map((ing: string) => parseIngredientString(ing.toString())),
       tags: cleanTags
     };
