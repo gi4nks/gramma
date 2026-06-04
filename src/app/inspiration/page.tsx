@@ -25,7 +25,7 @@ export default async function InspirationPage({
 
   const [recipes, pantry] = await Promise.all([
     db.recipe.findMany({
-      include: { ingredients: { include: { ingredient: true } } }
+      include: { ingredients: { include: { ingredient: true } }, recipeTags: { include: { tag: true } } }
     }),
     db.pantryItem.findMany({
       include: { ingredient: true }
@@ -193,10 +193,10 @@ function RecipeDenseCard({ recipe }: { recipe: RecipeWithInspiration }) {
         </div>
 
         {/* Bottom Tags */}
-        {recipe.tags && (
+        {(recipe as any).recipeTags && (recipe as any).recipeTags.length > 0 && (
           <div className="flex flex-wrap gap-1 border-t border-base-200 pt-3 mt-1">
-            {recipe.tags.split(',').slice(0, 2).map((tag: string, i: number) => (
-              <span key={i} className="text-[8px] font-black opacity-30 uppercase tracking-tighter">#{tag}</span>
+            {(recipe as any).recipeTags.slice(0, 2).map((rt: any) => (
+              <span key={rt.tag.id} className="text-[8px] font-black opacity-30 uppercase tracking-tighter">#{rt.tag.name}</span>
             ))}
           </div>
         )}

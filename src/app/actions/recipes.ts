@@ -182,8 +182,22 @@ export async function addRecipeFromUrl(formData: FormData) {
       data: {
         name: extracted.name,
         sourceUrl: url,
-        tags: extracted.tags,
         instructions: extracted.instructions || null,
+        recipeTags: {
+          create: await Promise.all(
+            extracted.tags
+              .split(",")
+              .filter(Boolean)
+              .map(async (tagName) => {
+                const tag = await db.tag.upsert({
+                  where: { name: tagName.trim() },
+                  update: {},
+                  create: { name: tagName.trim() },
+                });
+                return { tagId: tag.id };
+              })
+          ),
+        },
       },
     });
 
@@ -223,8 +237,22 @@ export async function addManualRecipe(data: { name: string; tags: string; instru
   const recipe = await db.recipe.create({
     data: {
       name: data.name,
-      tags: data.tags,
       instructions: data.instructions || null,
+      recipeTags: {
+        create: await Promise.all(
+          data.tags
+            .split(",")
+            .filter(Boolean)
+            .map(async (tagName) => {
+              const tag = await db.tag.upsert({
+                where: { name: tagName.trim() },
+                update: {},
+                create: { name: tagName.trim() },
+              });
+              return { tagId: tag.id };
+            })
+        ),
+      },
     },
   });
 

@@ -41,7 +41,7 @@ export default async function RecipesPage({
   const [recipes, totalCount] = await Promise.all([
     db.recipe.findMany({
       where: whereClause,
-      include: { ingredients: { include: { ingredient: true } } },
+      include: { ingredients: { include: { ingredient: true } }, recipeTags: { include: { tag: true } } },
       orderBy: orderBy,
       skip: (currentPage - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
@@ -129,11 +129,11 @@ export default async function RecipesPage({
                   </div>
 
                   {/* Visualizzazione Tag */}
-                  {recipe.tags && (
+                  {recipe.recipeTags && recipe.recipeTags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {recipe.tags.split(",").slice(0, 3).map((tag, i) => (
-                        <span key={i} className="text-[9px] font-bold uppercase tracking-tighter bg-primary/10 text-primary px-2 py-0.5 rounded-md">
-                          {tag}
+                      {recipe.recipeTags.slice(0, 3).map((rt) => (
+                        <span key={rt.tag.id} className="text-[9px] font-bold uppercase tracking-tighter bg-primary/10 text-primary px-2 py-0.5 rounded-md">
+                          {rt.tag.name}
                         </span>
                       ))}
                     </div>
