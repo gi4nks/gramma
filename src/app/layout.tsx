@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { ShoppingBasket, BookOpen, Calendar, Refrigerator, Home, Sparkles } from "lucide-react";
+import { ToastContainer } from "@/components/Toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,8 +27,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="it" data-theme="cupcake">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <html lang="it" suppressHydrationWarning>
+        <head>
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              (function(){
+                var t = localStorage.getItem("gramma-theme");
+                if (!t) { t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
+                document.documentElement.setAttribute("data-theme", t === "dark" ? "dim" : "cupcake");
+              })();
+            `
+          }} />
+        </head>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className="drawer lg:drawer-open">
           <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
           <div className="drawer-content flex flex-col min-h-screen bg-base-200">
@@ -45,47 +58,54 @@ export default function RootLayout({
             <main className="flex-1 p-4 md:p-8 w-full max-w-[100vw] overflow-x-hidden">
               {children}
             </main>
+            <ToastContainer />
           </div> 
           
-          <div className="drawer-side">
+          <div className="drawer-side flex flex-col">
             <label htmlFor="my-drawer-2" aria-label="close sidebar" className="drawer-overlay"></label> 
-            <ul className="menu p-4 w-80 min-h-full bg-base-100 text-base-content flex flex-col gap-2">
-              <li className="mb-4">
-                <Link href="/" className="text-2xl font-bold flex gap-2 items-center">
-                  <span className="text-primary">Gramma</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/">
-                  <Home size={20} /> Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/pantry">
-                  <Refrigerator size={20} /> Dispensa
-                </Link>
-              </li>
-              <li>
-                <Link href="/recipes">
-                  <BookOpen size={20} /> Ricette
-                </Link>
-              </li>
-              <li>
-                <Link href="/weekly-plan">
-                  <Calendar size={20} /> Piano Settimanale
-                </Link>
-              </li>
-              <li>
-                <Link href="/inspiration">
-                  <Sparkles size={20} /> Ispirazione
-                </Link>
-              </li>
-              <li>
-                <Link href="/shopping-list">
-                  <ShoppingBasket size={20} /> Lista Spesa
-                </Link>
-              </li>
-            </ul>
+            <div className="flex flex-col flex-1 w-80 bg-base-100 text-base-content">
+              <ul className="menu p-4 flex-1 flex flex-col gap-2">
+                <li className="mb-4">
+                  <Link href="/" className="text-2xl font-bold flex gap-2 items-center">
+                    <span className="text-primary">Gramma</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/">
+                    <Home size={20} /> Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pantry">
+                    <Refrigerator size={20} /> Dispensa
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/recipes">
+                    <BookOpen size={20} /> Ricette
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/weekly-plan">
+                    <Calendar size={20} /> Piano Settimanale
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/inspiration">
+                    <Sparkles size={20} /> Ispirazione
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/shopping-list">
+                    <ShoppingBasket size={20} /> Lista Spesa
+                  </Link>
+                </li>
+              </ul>
+              <div className="p-4 border-t border-base-200 flex items-center justify-between">
+                <span className="text-[10px] font-bold opacity-30 uppercase tracking-widest">Aspetto</span>
+                <ThemeToggle />
+              </div>
+            </div>
           </div>
         </div>
       </body>

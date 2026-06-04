@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { addToWeeklyPlan } from "@/app/actions/weekly-plan";
 import { Utensils, Loader2 } from "lucide-react";
+import { showToast } from "@/lib/toast";
 
 interface Props {
   recipeId: string;
@@ -19,11 +20,12 @@ export function InspirationAddForm({ recipeId, recipeName, modalId, days, meals 
     setLoading(true);
     try {
       await addToWeeklyPlan(formData);
-      // Chiude il modal deselezionando il checkbox
+      showToast(`${recipeName} aggiunta al piano!`, "success");
       const checkbox = document.getElementById(modalId) as HTMLInputElement;
       if (checkbox) checkbox.checked = false;
     } catch (e) {
       console.error("Errore durante la pianificazione", e);
+      showToast("Errore durante la pianificazione", "error");
     } finally {
       setLoading(false);
     }

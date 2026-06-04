@@ -1,8 +1,9 @@
 import { db } from "@/lib/db";
-import { normalizeQuantity, sanitizeIngredientName } from "@/lib/ingredients";
+import { normalizeQuantity, isIngredientMatch } from "@/lib/ingredients";
 import { CheckCircle2, Sparkles, CalendarPlus, Search, X } from "lucide-react";
 import Link from "next/link";
 import { InspirationAddForm } from "@/components/InspirationAddForm";
+import { Recipe } from "@prisma/client";
 
 const DAYS = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
 const MEALS = ["Colazione", "Pranzo", "Cena"];
@@ -12,8 +13,6 @@ interface RecipeWithInspiration extends Recipe {
   missingCount: number;
   missingList: string[];
 }
-
-import { Recipe } from "@prisma/client";
 
 export default async function InspirationPage({
   searchParams,
@@ -45,14 +44,8 @@ export default async function InspirationPage({
       if (IGNORED.includes(name)) return;
       totalEssential++;
       const { value: reqVal, baseUnit: reqUnit } = normalizeQuantity(ri.quantity, ri.unit);
-      const sanitizedReqName = sanitizeIngredientName(name);
-      
-      const pantryItem = pantry.find(p => {
-        const sanitizedPantryName = sanitizeIngredientName(p.ingredient.name);
-        return sanitizedPantryName === sanitizedReqName || 
-               sanitizedPantryName.includes(sanitizedReqName) ||
-               sanitizedReqName.includes(sanitizedPantryName);
-      });
+
+      const pantryItem = pantry.find(p => isIngredientMatch(name, p.ingredient.name));
 
       if (pantryItem) {
         const { value: panVal, baseUnit: panUnit } = normalizeQuantity(pantryItem.quantity, pantryItem.unit);

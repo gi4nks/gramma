@@ -26,9 +26,25 @@ model Recipe {
   id                String             @id @default(cuid())
   name              String
   sourceUrl         String?
-  tags              String?            // Stringa separata da virgole (es: "primo,vegana")
+  instructions      String?
   ingredients       RecipeIngredient[]
   weeklyPlans       WeeklyPlan[]
+  recipeTags        RecipeTag[]
+}
+
+model Tag {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  recipeTags RecipeTag[]
+}
+
+model RecipeTag {
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipeId String
+  tag      Tag    @relation(fields: [tagId], references: [id])
+  tagId    String
+
+  @@id([recipeId, tagId])
 }
 
 model RecipeIngredient {

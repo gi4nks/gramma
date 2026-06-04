@@ -69,7 +69,7 @@ export async function addShoppingListToPantry() {
     })
   ]);
 
-  const { normalizeQuantity } = await import("@/lib/ingredients");
+  const { normalizeQuantity, isIngredientMatch } = await import("@/lib/ingredients");
   const requiredBase: Record<string, { name: string; totalValue: number; baseUnit: string }> = {};
   const IGNORED = ["acqua", "acqua tiepida", "acqua calda", "acqua fredda", "acqua (tiepida)", "sale", "sale fino", "sale grosso", "sale marino"];
 
@@ -89,11 +89,7 @@ export async function addShoppingListToPantry() {
   // 2. Per ogni elemento necessario, calcola il delta e aggiorna la dispensa
   for (const [name, item] of Object.entries(requiredBase)) {
     // Cerca se esiste già un item simile in dispensa
-    const pantryItem = pantry.find(p => 
-      p.ingredient.name.toLowerCase() === name || 
-      p.ingredient.name.toLowerCase().includes(name) ||
-      name.includes(p.ingredient.name.toLowerCase())
-    );
+    const pantryItem = pantry.find(p => isIngredientMatch(name, p.ingredient.name));
 
     let inPantryValue = 0;
     if (pantryItem) {

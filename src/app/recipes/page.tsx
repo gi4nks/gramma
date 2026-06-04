@@ -1,8 +1,9 @@
 import { db } from "@/lib/db";
 import { deleteRecipe } from "@/app/actions/recipes";
-import { Trash2, ExternalLink, ChevronDown, ChevronLeft, ChevronRight, SortAsc, Clock, Search as SearchIcon, Plus } from "lucide-react";
+import { ExternalLink, ChevronDown, ChevronLeft, ChevronRight, SortAsc, Clock, Search as SearchIcon, Plus } from "lucide-react";
 import { RecipeImportForm } from "@/components/RecipeImportForm";
 import { RecipeManualForm } from "@/components/RecipeManualForm";
+import { ConfirmDelete } from "@/components/ConfirmDelete";
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
 
@@ -124,11 +125,7 @@ export default async function RecipesPage({
                     <h3 className="card-title text-lg capitalize line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                       {recipe.name}
                     </h3>
-                    <form action={deleteRecipe.bind(null, recipe.id)}>
-                      <button className="btn btn-ghost btn-xs text-error opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto min-h-0">
-                        <Trash2 size={16} />
-                      </button>
-                    </form>
+                    <ConfirmDelete onConfirm={deleteRecipe.bind(null, recipe.id)} itemName={recipe.name} />
                   </div>
 
                   {/* Visualizzazione Tag */}
@@ -167,6 +164,17 @@ export default async function RecipesPage({
                       </ul>
                     </div>
                   </div>
+                  {recipe.instructions && (
+                    <div className="collapse bg-base-200/40 mt-2 rounded-xl">
+                      <input type="checkbox" className="peer" /> 
+                      <div className="collapse-title text-[10px] font-black tracking-widest flex items-center justify-between py-2 min-h-0">
+                        PROCEDIMENTO <ChevronDown size={14} className="transition-transform peer-checked:rotate-180 opacity-50"/>
+                      </div>
+                      <div className="collapse-content px-4"> 
+                        <p className="text-xs whitespace-pre-line leading-relaxed opacity-80">{recipe.instructions}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))

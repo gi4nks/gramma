@@ -17,6 +17,7 @@ interface JsonLdRecipe {
   ingredients?: string[];
   recipeCategory?: string | string[];
   keywords?: string;
+  recipeInstructions?: string | string[] | { "@type"?: string; text?: string; name?: string; itemListElement?: { text?: string }[] }[];
   "@graph"?: JsonLdRecipe[];
 }
 
@@ -69,10 +70,11 @@ function parseNumericQuantity(qtyStr: string): number {
   const normalized = qtyStr.replace(",", ".").replace(/\s/g, "");
   if (normalized.includes("/")) {
     const [num, den] = normalized.split("/").map(Number);
-    return den !== 0 ? num / den : 1;
+    return den !== 0 ? Math.round((num / den) * 100) / 100 : 1;
   }
   const parsed = parseFloat(normalized);
-  return isNaN(parsed) ? 1 : parsed;
+  if (isNaN(parsed)) return 1;
+  return Math.round(parsed * 100) / 100;
 }
 
 async function extractRecipeFromJsonLd(url: string) {
@@ -117,7 +119,7 @@ async function extractRecipeFromJsonLd(url: string) {
     });
 
     if (!recipeData) {
-      return { name: $("h1").first().text().trim() || $("title").text().trim(), ingredients: [], tags: "" };
+      return { name: $("h1").first().text().trim() || $("title").text().trim(), ingredients: [], tags: "", instructions: "" };
     }
 
     const currentRecipeData = recipeData as JsonLdRecipe;
@@ -139,11 +141,26 @@ async function extractRecipeFromJsonLd(url: string) {
     )).join(",");
 
     const rawIngredients = currentRecipeData.recipeIngredient || currentRecipeData.ingredients || [];
+
+    const rawInstructions = currentRecipeData.recipeInstructions;
+    let instructions = "";
+    if (typeof rawInstructions === "string") {
+      instructions = rawInstructions;
+    } else if (Array.isArray(rawInstructions)) {
+      instructions = rawInstructions.map(step => {
+        if (typeof step === "string") return step;
+        if (step.text) return step.text;
+        if (step.name) return step.name;
+        if (step.itemListElement) return step.itemListElement.map(s => s.text || "").join("\n");
+        return "";
+      }).filter(Boolean).join("\n\n");
+    }
     
     return {
       name: currentRecipeData.name || $("h1").first().text().trim(),
       ingredients: rawIngredients.map((ing: string) => parseIngredientString(ing.toString())),
-      tags: cleanTags
+      tags: cleanTags,
+      instructions
     };
   } catch (error) {
     console.error(error);
@@ -166,6 +183,7 @@ export async function addRecipeFromUrl(formData: FormData) {
         name: extracted.name,
         sourceUrl: url,
         tags: extracted.tags,
+        instructions: extracted.instructions || null,
       },
     });
 
@@ -201,11 +219,12 @@ export async function deleteRecipe(id: string) {
   revalidatePath("/");
 }
 
-export async function addManualRecipe(data: { name: string; tags: string; ingredients: { name: string; quantity: number; unit: string }[] }) {
+export async function addManualRecipe(data: { name: string; tags: string; instructions?: string; ingredients: { name: string; quantity: number; unit: string }[] }) {
   const recipe = await db.recipe.create({
     data: {
       name: data.name,
       tags: data.tags,
+      instructions: data.instructions || null,
     },
   });
 

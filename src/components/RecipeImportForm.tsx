@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Link as LinkIcon, Loader2, Sparkles } from "lucide-react";
 import { addRecipeFromUrl } from "@/app/actions/recipes";
+import { showToast } from "@/lib/toast";
 
 export function RecipeImportForm() {
   const [loading, setLoading] = useState(false);
@@ -15,8 +16,10 @@ export function RecipeImportForm() {
       await addRecipeFromUrl(formData);
       const form = document.getElementById("import-form") as HTMLFormElement;
       form?.reset();
+      showToast("Ricetta importata con successo!", "success");
     } catch {
       setError("Errore durante l'importazione. Riprova con un altro link.");
+      showToast("Importazione fallita. Riprova.", "error");
     } finally {
       setLoading(false);
     }

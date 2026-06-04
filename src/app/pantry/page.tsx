@@ -1,7 +1,9 @@
 import { db } from "@/lib/db";
 import { addOrUpdatePantryItem, deletePantryItem, adjustPantryQuantity } from "@/app/actions/pantry";
-import { Trash2, Plus, Minus, Search, Refrigerator, PlusCircle, ArrowUpDown } from "lucide-react";
+import { Plus, Minus, Search, Refrigerator, PlusCircle, ArrowUpDown } from "lucide-react";
 import Link from "next/link";
+import { ConfirmDelete } from "@/components/ConfirmDelete";
+import { UnitSelect } from "@/components/UnitSelect";
 
 export default async function PantryPage({
   searchParams,
@@ -77,9 +79,9 @@ export default async function PantryPage({
             <label className="label py-1"><span className="label-text text-[9px] font-bold opacity-40 uppercase">Q.tà</span></label>
             <input name="quantity" type="number" step="0.1" placeholder="1" className="input input-bordered rounded-lg w-full h-9 text-sm" required />
           </div>
-          <div className="form-control w-24">
+          <div className="form-control w-28">
             <label className="label py-1"><span className="label-text text-[9px] font-bold opacity-40 uppercase">Unità</span></label>
-            <input name="unit" placeholder="kg, l, pz" className="input input-bordered rounded-lg w-full h-9 text-sm" required />
+            <UnitSelect name="unit" required className="w-full" />
           </div>
           <button type="submit" className="btn btn-primary btn-sm rounded-lg h-9 px-4 shadow-md shadow-primary/20">
             <PlusCircle size={16} /> <span>Aggiungi</span>
@@ -135,11 +137,9 @@ export default async function PantryPage({
                       <span className="badge badge-ghost font-bold text-[9px] uppercase opacity-60">{item.unit}</span>
                     </td>
                     <td className="py-3 text-right pr-8">
-                      <form action={deletePantryItem.bind(null, item.id)}>
-                        <button className="btn btn-ghost btn-xs text-error/20 hover:text-error hover:bg-error/10 rounded-lg transition-all">
-                          <Trash2 size={14} />
-                        </button>
-                      </form>
+                      <div className="group inline-block">
+                        <ConfirmDelete onConfirm={deletePantryItem.bind(null, item.id)} itemName={item.ingredient.name} />
+                      </div>
                     </td>
                   </tr>
                 ))

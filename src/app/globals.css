@@ -17,6 +17,21 @@ body {
   font-family: var(--font-sans);
 }
 
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out;
+}
+
 /* Regole per la stampa */
 @media print {
   .no-print, .drawer-side, .navbar {

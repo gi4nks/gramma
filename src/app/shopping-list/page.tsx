@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { CheckCircle2, ShoppingCart, Scale, Truck } from "lucide-react";
 import { PrintButton } from "@/components/PrintButton";
-import { normalizeQuantity, formatOutput, sanitizeIngredientName } from "@/lib/ingredients";
+import { normalizeQuantity, formatOutput, isIngredientMatch } from "@/lib/ingredients";
 import { addShoppingListToPantry } from "@/app/actions/pantry";
 
 export default async function ShoppingListPage() {
@@ -33,15 +33,7 @@ export default async function ShoppingListPage() {
   });
 
   const shoppingList = Object.entries(requiredBase).map(([key, item]) => {
-    const sanitizedKey = sanitizeIngredientName(key);
-    
-    // Matching ultra-flessibile
-    const pantryItem = pantry.find(p => {
-      const sanitizedPantryName = sanitizeIngredientName(p.ingredient.name);
-      return sanitizedPantryName === sanitizedKey || 
-             sanitizedPantryName.includes(sanitizedKey) ||
-             sanitizedKey.includes(sanitizedPantryName);
-    });
+    const pantryItem = pantry.find(p => isIngredientMatch(key, p.ingredient.name));
 
     let inPantryValue = 0;
     if (pantryItem) {

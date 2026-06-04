@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Trash2, Plus, Utensils, CheckCircle, GripVertical } from "lucide-react";
 import { removeFromWeeklyPlan, markAsCooked, moveWeeklyPlanItem, addToWeeklyPlan } from "@/app/actions/weekly-plan";
+import { showToast } from "@/lib/toast";
 
 interface Plan {
   id: string;
@@ -116,12 +117,26 @@ export function WeeklyPlanGrid({ initialPlans, recipes, days, meals }: Props) {
                                       </div>
                                       
                                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <form action={() => startTransition(() => markAsCooked(plan.id))}>
+                                        <form action={() => startTransition(async () => {
+                                          try {
+                                            await markAsCooked(plan.id);
+                                            showToast(`${plan.recipe.name} cucinato! Ingredienti scalati dalla dispensa.`, "success");
+                                          } catch {
+                                            showToast("Errore durante l'operazione", "error");
+                                          }
+                                        })}>
                                           <button title="Cucinato" className="btn btn-ghost btn-xs text-success p-0 h-auto min-h-0">
                                             <CheckCircle size={14} />
                                           </button>
                                         </form>
-                                        <form action={() => startTransition(() => removeFromWeeklyPlan(plan.id))}>
+                                        <form action={() => startTransition(async () => {
+                                          try {
+                                            await removeFromWeeklyPlan(plan.id);
+                                            showToast(`${plan.recipe.name} rimosso dal piano.`, "info");
+                                          } catch {
+                                            showToast("Errore durante la rimozione", "error");
+                                          }
+                                        })}>
                                           <button title="Rimuovi" className="btn btn-ghost btn-xs text-error p-0 h-auto min-h-0">
                                             <Trash2 size={12} />
                                           </button>
@@ -157,12 +172,18 @@ export function WeeklyPlanGrid({ initialPlans, recipes, days, meals }: Props) {
                           <form action={async (formData) => {
                             const recipeId = formData.get("recipeId");
                             if (!recipeId) return;
-                            
-                            await addToWeeklyPlan(formData);
-                            const modal = document.getElementById(`modal-${day}-${meal}`) as HTMLInputElement;
-                            if (modal) modal.checked = false;
-                            setSearchTerm("");
-                            setSelectedRecipeId(null);
+
+                            const recipeName = recipes.find(r => r.id === recipeId)?.name || "Piatto";
+                            try {
+                              await addToWeeklyPlan(formData);
+                              showToast(`${recipeName} aggiunto a ${day}!`, "success");
+                              const modal = document.getElementById(`modal-${day}-${meal}`) as HTMLInputElement;
+                              if (modal) modal.checked = false;
+                              setSearchTerm("");
+                              setSelectedRecipeId(null);
+                            } catch {
+                              showToast("Errore durante l'aggiunta", "error");
+                            }
                           }} className="flex flex-col gap-4">
                             <input type="hidden" name="day" value={day} />
                             <input type="hidden" name="mealType" value={meal} />

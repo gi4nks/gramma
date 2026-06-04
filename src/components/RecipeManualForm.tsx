@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Plus, Trash2, Save, ChefHat, Loader2, X } from "lucide-react";
 import { addManualRecipe } from "@/app/actions/recipes";
+import { showToast } from "@/lib/toast";
+import { UnitSelect } from "@/components/UnitSelect";
 
 interface IngredientInput {
   name: string;
@@ -14,6 +16,7 @@ export function RecipeManualForm({ modalId }: { modalId: string }) {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [tags, setTags] = useState("");
+  const [instructions, setInstructions] = useState("");
   const [ingredients, setIngredients] = useState<IngredientInput[]>([{ name: "", quantity: 1, unit: "pz" }]);
 
   const addIngredient = () => {
@@ -40,16 +43,17 @@ export function RecipeManualForm({ modalId }: { modalId: string }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await addManualRecipe({ name, tags, ingredients });
-      // Reset form
+      await addManualRecipe({ name, tags, instructions, ingredients });
+      showToast("Ricetta salvata con successo!", "success");
       setName("");
       setTags("");
+      setInstructions("");
       setIngredients([{ name: "", quantity: 1, unit: "pz" }]);
-      // Close modal
       const checkbox = document.getElementById(modalId) as HTMLInputElement;
       if (checkbox) checkbox.checked = false;
     } catch (error) {
       console.error(error);
+      showToast("Errore durante il salvataggio", "error");
     } finally {
       setLoading(false);
     }
@@ -92,6 +96,16 @@ export function RecipeManualForm({ modalId }: { modalId: string }) {
           </div>
         </div>
 
+        <div className="form-control">
+          <label className="label"><span className="label-text font-bold opacity-50 text-[10px] tracking-widest">ISTRUZIONI (opzionale)</span></label>
+          <textarea
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            placeholder="Descrivi il procedimento di preparazione..."
+            className="textarea textarea-bordered rounded-xl min-h-[100px]"
+          />
+        </div>
+
         <div className="divider text-[10px] font-black opacity-30 tracking-widest">INGREDIENTI</div>
 
         <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto px-1">
@@ -116,13 +130,12 @@ export function RecipeManualForm({ modalId }: { modalId: string }) {
                   required 
                 />
               </div>
-              <div className="w-20">
-                <input 
+              <div className="w-24">
+                <UnitSelect
                   value={ing.unit}
                   onChange={(e) => updateIngredient(index, "unit", e.target.value)}
-                  placeholder="Unità" 
-                  className="input input-bordered input-sm w-full rounded-lg" 
-                  required 
+                  required
+                  className="input-sm h-8 text-[11px]"
                 />
               </div>
               <button 
